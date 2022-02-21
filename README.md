@@ -19,7 +19,8 @@ An IAM role, Instance Profile, and identity policies are provided by the sample 
 ## Prerequisites and limitations
 
 ### Prerequisites 
-This pattern assumes a relatively modern version of Terraform at least 0.14 or greater.
+This pattern assumes a of Terraform at least 1.1.5 or greater.
+This pattern assumes a Terraform AWS Provider of atleast version "4.0.0".
 The customer will need to deploy Terraform pipelines to implement the code samples.
 The customer will need to provide their own EC2 Instance and the requisite connectivity so that it can communicate with the KMS, S3, SSM, SSMMessages, and EC2Messages service endpoints.
 
