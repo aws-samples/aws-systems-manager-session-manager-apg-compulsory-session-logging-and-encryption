@@ -409,32 +409,30 @@ data "aws_iam_policy_document" "SessionManagerKey" {
     }
   }
 
+      statement {
+      sid    = "AWS Config Permissions"
+      effect = "Allow"
+      principals {
+        type        = "AWS"
+        identifiers = ["*"]
+      }
+      actions = [
+        "kms:DescribeKey",
+        "kms:GetKeyPolicy",
+        "kms:List*"
+      ]
 
-  #OPTIONAL Permissions for AWS Config to perform detections against key example
-  #     statement {
-  #     sid    = "AWS Config Permissions"
-  #     effect = "Allow"
-  #     principals {
-  #       type        = "AWS"
-  #       identifiers = ["*"]
-  #     }
-  #     actions = [
-  #       "kms:DescribeKey",
-  #       "kms:GetKeyPolicy",
-  #       "kms:List*"
-  #     ]
-
-  #     resources = [
-  #       "*",
-  #     ]
-  #     condition {
-  #       test     = "StringEquals"
-  #       variable = "aws:PrincipalArn"
-  #       values = [
-  #         ##ARNOFCONFIGRECORDERROLE##
-  #       ]
-  #     }
-  #   }
+      resources = [
+        "*",
+      ]
+      condition {
+        test     = "StringEquals"
+        variable = "aws:PrincipalArn"
+        values = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
+        ]
+      }
+    }
 
 }
 
@@ -652,24 +650,28 @@ data "aws_iam_policy_document" "SessionManagerS3Bucket" {
 
 resource "aws_s3_bucket" "SessionManagerS3Logging" {
   bucket = local.SessionManagerS3LoggingBucketName
+
+}
+
+resource "aws_s3_bucket_acl" "SessionManagerS3Logging" {
+  bucket = aws_s3_bucket.SessionManagerS3Logging.id
   acl    = "private"
+}
 
-  versioning {
-    enabled = true
+resource "aws_s3_bucket_versioning" "SessionManagerS3Logging" {
+  bucket = aws_s3_bucket.SessionManagerS3Logging.id
+  versioning_configuration {
+    status = "Enabled"
   }
-    #TODO 
-  #   logging {
-  #   target_bucket = "Putloggingbucketnamehere"
-  #   target_prefix = "${local.SessionManagerS3LoggingBucketName}/"
-  # }
+}
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.SessionManager.arn
-        sse_algorithm     = "aws:kms"
-      }
-      bucket_key_enabled = true
+resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
+  bucket = aws_s3_bucket.SessionManagerS3Logging.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.SessionManager.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }
@@ -691,7 +693,7 @@ resource "aws_s3_bucket_ownership_controls" "SessionManagerS3Logging" {
   bucket = aws_s3_bucket.SessionManagerS3Logging.id
 
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
