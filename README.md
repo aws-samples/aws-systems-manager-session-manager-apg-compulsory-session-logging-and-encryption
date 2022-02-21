@@ -1,4 +1,4 @@
-## AWS Systems Manager Sessions Manager Amazon Prescriptive Guidance Compulsory Session Logging and Encryption
+## AWS Systems Manager Sessions Manager AWS Prescriptive Guidance Compulsory Session Logging and Encryption
 
 ## Summary
 
